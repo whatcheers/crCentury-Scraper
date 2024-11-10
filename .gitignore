@@ -1,0 +1,24 @@
+# Node dependencies
+node_modules/
+package-lock.json
+
+# PDF files
+*.pdf
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
