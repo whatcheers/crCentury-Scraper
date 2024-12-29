@@ -11,7 +11,7 @@ const BASE_PATH = process.env.BASE_PATH || path.resolve('.');
 // Rate limiting middleware
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: 500, // limit each IP to 500 requests per windowMs (increased from 100)
     message: 'Too many requests from this IP, please try again later.'
 });
 
@@ -86,7 +86,7 @@ app.get('/', async (req, res) => {
             <!DOCTYPE html>
             <html lang="en">
             <head>
-                <title>Super Fancy Reddit Specific PDF Viewer</title>
+                <title>CRHistoryPorn's 100-Year Archive Explorer</title>
                 <meta name="description" content="Historical newspaper viewer for The Evening Gazette from Cedar Rapids, Iowa - 100 years ago">
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -104,8 +104,8 @@ app.get('/', async (req, res) => {
 
                 <header role="banner">
                     <div class="container">
-                        <h1>CRHistoryPorn - The Evening Gazette</h1>
-                        <div class="subtitle" role="doc-subtitle">Exploring Sunday Morning Cedar Rapids History from 100 Years Ago</div>
+                        <h1>CRHistoryPorn's 100-Year Archive Explorer</h1>
+                        <div class="subtitle" role="doc-subtitle">Exploring Cedar Rapids History Through The Evening Gazette - 100 Years Ago Today</div>
                     </div>
                 </header>
 
@@ -155,14 +155,25 @@ app.get('/', async (req, res) => {
                             </ul>
 
                             <div class="support-section">
-                                <p id="contribute-text">View project source code and contribute:</p>
-                                <a href="https://github.com/whatcheer/crCentury-Scraper" 
-                                   class="github-button"
-                                   role="button"
-                                   aria-labelledby="contribute-text">
-                                    <i class="fab fa-github" aria-hidden="true"></i>
-                                    <span>GitHub Repository</span>
-                                </a>
+                                <p id="contribute-text">Support this project:</p>
+                                <div class="support-buttons">
+                                    <a href="https://github.com/whatcheers/crCentury-Scraper" 
+                                       class="github-button"
+                                       role="button"
+                                       aria-labelledby="contribute-text">
+                                        <i class="fab fa-github" aria-hidden="true"></i>
+                                        <span>GitHub Repository</span>
+                                    </a>
+                                    <a href="https://ko-fi.com/dbsurplussolutions" 
+                                       class="kofi-button"
+                                       role="button"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       aria-label="Support on Ko-fi">
+                                        <i class="fas fa-coffee" aria-hidden="true"></i>
+                                        <span>Support on Ko-fi</span>
+                                    </a>
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -170,7 +181,8 @@ app.get('/', async (req, res) => {
 
                 <footer role="contentinfo">
                     <div class="container">
-                        <p>© ${new Date().getFullYear()} Archive Project</p>
+                        <h2>Why?</h2>
+                        <p class="footer-note">This page was created primarily for fun, filling the gap left by the lack of good, free, high-quality image hosting services for newspaper scans. It serves the r/cedarrapids community. Until it gets too expensive.</p>
                     </div>
                 </footer>
             </body>
@@ -250,6 +262,10 @@ function generateViewerHtml(title, description, files, date) {
                     showToolbar: true,
                     showNavigation: true,
                     showThumbnails: true,
+                    
+                    // Disable info and share buttons
+                    showInfo: false,
+                    showShare: false,
                     
                     // Return to home
                     imagesBaseURL: '/bookreader/images/',
