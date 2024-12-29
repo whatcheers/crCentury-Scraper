@@ -292,35 +292,4 @@ footer h2 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
     color: var(--footer-text);
-}
-
-.support-buttons {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.kofi-button {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.8rem 1.5rem;
-    background: #29abe0;
-    color: var(--button-text);
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    transition: background 0.2s, transform 0.1s;
-}
-
-.kofi-button:hover {
-    background: #1a8dbb;
-    transform: translateY(-1px);
-    text-decoration: none;
-    color: var(--button-text);
-}
-
-.kofi-button i {
-    margin-right: 10px;
-    font-size: 1.2rem;
 } 

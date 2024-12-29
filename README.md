@@ -4,6 +4,9 @@ A tool to scrape and display historical newspapers from the Cedar Rapids Evening
 
 See live example: [redditdev.cheesemonger.info](https://redditdev.cheesemonger.info)
 
+Support the project:
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/dbsurplussolutions)
+
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github)](https://github.com/whatcheer/crCentury-Scraper)
 
 ## Features

@@ -155,25 +155,14 @@ app.get('/', async (req, res) => {
                             </ul>
 
                             <div class="support-section">
-                                <p id="contribute-text">Support this project:</p>
-                                <div class="support-buttons">
-                                    <a href="https://github.com/whatcheers/crCentury-Scraper" 
-                                       class="github-button"
-                                       role="button"
-                                       aria-labelledby="contribute-text">
-                                        <i class="fab fa-github" aria-hidden="true"></i>
-                                        <span>GitHub Repository</span>
-                                    </a>
-                                    <a href="https://ko-fi.com/dbsurplussolutions" 
-                                       class="kofi-button"
-                                       role="button"
-                                       target="_blank"
-                                       rel="noopener noreferrer"
-                                       aria-label="Support on Ko-fi">
-                                        <i class="fas fa-coffee" aria-hidden="true"></i>
-                                        <span>Support on Ko-fi</span>
-                                    </a>
-                                </div>
+                                <p id="contribute-text">View project source code and contribute:</p>
+                                <a href="https://github.com/whatcheers/crCentury-Scraper" 
+                                   class="github-button"
+                                   role="button"
+                                   aria-labelledby="contribute-text">
+                                    <i class="fab fa-github" aria-hidden="true"></i>
+                                    <span>GitHub Repository</span>
+                                </a>
                             </div>
                         </section>
                     </div>
