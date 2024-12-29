@@ -285,11 +285,4 @@ footer {
     .footer-note {
         color: #aaa;
     }
-}
-
-footer h2 {
-    font-family: var(--header-font);
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: var(--footer-text);
 } 
