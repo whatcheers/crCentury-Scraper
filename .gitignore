@@ -4,6 +4,7 @@ package-lock.json
 
 # PDF files
 *.pdf
+*.png
 
 # Environment variables
 .env
