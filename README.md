@@ -12,11 +12,12 @@ A tool to scrape and display historical newspapers from the Cedar Rapids Evening
 - Organizes content by date in a clean directory structure
 - Combines pages into complete editions
 
-## Prerequisites
+## Prerequisites (Tested on Ubuntu 24.04)
 
 - Node.js (v14 or higher)
 - GraphicsMagick (`sudo apt-get install graphicsmagick`)
 - Ghostscript (`sudo apt-get install ghostscript`)
+- Chrome/Chromium (will be installed as a snap package)
 
 ## Installation
 
@@ -33,11 +34,21 @@ npm install
 
 3. Install system requirements (on Linux/Ubuntu):
 ```bash
+# Update and install main applications
 sudo apt-get update
-sudo apt-get install graphicsmagick
-sudo apt-get install ghostscript
-```
+sudo apt-get install graphicsmagick ghostscript chromium-browser
 
+# Install Chrome/Puppeteer dependencies
+sudo apt-get install -y \
+    libnss3 \
+    libatk1.0-0t64 \
+    libatk-bridge2.0-0t64 \
+    libcups2t64 \
+    libxkbcommon0 \
+    libgtk-3-0t64 \
+    libgbm1 \
+    libasound2t64
+```
 ## Running the App
 
 ### Step 1: Download Today's Paper (from 100 years ago)
