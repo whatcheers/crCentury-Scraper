@@ -105,7 +105,6 @@ app.get('/', async (req, res) => {
                 <header role="banner">
                     <div class="container">
                         <h1>CRHistoryPorn's 100-Year Archive Explorer</h1>
-                        <div class="subtitle" role="doc-subtitle">Exploring Cedar Rapids History Through The Evening Gazette - 100 Years Ago Today</div>
                     </div>
                 </header>
 
