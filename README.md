@@ -4,7 +4,7 @@ A tool to scrape and display historical newspapers from the Cedar Rapids Evening
 
 See live example: [redditdev.cheesemonger.info](https://redditdev.cheesemonger.info)
 
-Support the project:
+Support the server:
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/dbsurplussolutions)
 
 
