@@ -11,7 +11,10 @@ A tool to scrape and display historical newspapers from the Cedar Rapids Evening
 - Simple web viewer for browsing the archive
 - Organizes content by date in a clean directory structure
 - Combines pages into complete editions
-- Flexible date targeting (specific day, week number, or current week)
+- Flexible date targeting:
+  - Week numbers (1-52)
+  - Specific dates (MM-DD format)
+  - Current week by default
 
 ## Prerequisites (Tested on Ubuntu 24.04)
 
@@ -69,7 +72,7 @@ node gazette-scraper-100years.js --week 51
 # or
 node gazette-scraper-100years.js --week=51
 ```
-Downloads papers from a specific week (1-52) from 100 years ago.
+Downloads papers from a specific week (1-52) from 100 years ago. Week 1 starts with the first Sunday of the year.
 
 3. **Specific Day**:
 ```bash
@@ -107,17 +110,14 @@ crCentury-Scraper/
 │   ├── page_XX.pdf     # Individual page PDFs
 │   └── Complete.pdf    # Combined issue
 ├── public/
-│   └── css/            # Styling
+│   ├── css/            # Styling
+│   └── js/             # JavaScript files
 └── node_modules/       # Dependencies
 ```
 
 ## Support
 
 This is an open source project. Feel free to contribute by submitting issues, feature requests, or pull requests on GitHub.
-
-## Contributing
-
-Feel free to submit issues and enhancement requests.
 
 ## License
 
