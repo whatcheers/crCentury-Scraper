@@ -1,10 +1,69 @@
+/* Light mode colors */
 :root {
-    --primary-color: #2c3e50;
-    --accent-color: #c0392b;
-    --bg-color: #f5f5f5;
-    --text-color: #333;
+    --primary-color: #1a365d;
+    --accent-color: #c53030;
+    --bg-color: #f7fafc;
+    --text-color: #2d3748;
+    --card-bg: #ffffff;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    --header-bg: var(--primary-color);
+    --header-text: #ffffff;
+    --button-hover: #2c5282;
+    --button-text: #ffffff;
+    --footer-bg: var(--primary-color);
+    --footer-text: #ffffff;
     --header-font: 'Playfair Display', serif;
     --body-font: 'Source Sans Pro', sans-serif;
+}
+
+/* Dark mode colors */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-color: #2b6cb0;
+        --accent-color: #f56565;
+        --bg-color: #1a202c;
+        --text-color: #e2e8f0;
+        --card-bg: #2d3748;
+        --card-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        --header-bg: #1a365d;
+        --header-text: #ffffff;
+        --button-hover: #4299e1;
+        --button-text: #ffffff;
+        --footer-bg: #1a365d;
+        --footer-text: #ffffff;
+    }
+}
+
+/* For users who prefer light mode even when system is dark */
+[data-theme="light"] {
+    --primary-color: #1a365d;
+    --accent-color: #c53030;
+    --bg-color: #f7fafc;
+    --text-color: #2d3748;
+    --card-bg: #ffffff;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    --header-bg: var(--primary-color);
+    --header-text: #ffffff;
+    --button-hover: #2c5282;
+    --button-text: #ffffff;
+    --footer-bg: var(--primary-color);
+    --footer-text: #ffffff;
+}
+
+/* For users who prefer dark mode even when system is light */
+[data-theme="dark"] {
+    --primary-color: #2b6cb0;
+    --accent-color: #f56565;
+    --bg-color: #1a202c;
+    --text-color: #e2e8f0;
+    --card-bg: #2d3748;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    --header-bg: #1a365d;
+    --header-text: #ffffff;
+    --button-hover: #4299e1;
+    --button-text: #ffffff;
+    --footer-bg: #1a365d;
+    --footer-text: #ffffff;
 }
 
 body { 
@@ -14,6 +73,7 @@ body {
     background: var(--bg-color);
     color: var(--text-color);
     line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -23,11 +83,12 @@ body {
 }
 
 header {
-    background: var(--primary-color);
-    color: white;
+    background: var(--header-bg);
+    color: var(--header-text);
     padding: 2rem 0;
     margin-bottom: 2rem;
     text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 h1 {
@@ -45,11 +106,12 @@ h1 {
 }
 
 .history-section {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 2rem;
     margin-bottom: 2rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: var(--card-shadow);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .history-section h2 {
@@ -67,21 +129,22 @@ h1 {
 }
 
 .date-list li {
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
     padding: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s, background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .date-list li:hover {
     transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 
 .date-header {
     font-family: var(--header-font);
     font-size: 1.2rem;
-    color: var(--primary-color);
+    color: var(--text-color);
     margin-bottom: 1rem;
     border-bottom: 2px solid var(--accent-color);
     padding-bottom: 0.5rem;
@@ -98,15 +161,16 @@ h1 {
     align-items: center;
     padding: 0.8rem 1rem;
     background: var(--primary-color);
-    color: white;
+    color: var(--button-text);
     text-decoration: none;
     border-radius: 4px;
     font-size: 0.9rem;
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.1s;
 }
 
 .format-button:hover {
-    background: #34495e;
+    background: var(--button-hover);
+    transform: translateY(-1px);
 }
 
 .format-button.pdf {
@@ -114,7 +178,8 @@ h1 {
 }
 
 .format-button.pdf:hover {
-    background: #d35400;
+    background: var(--accent-color);
+    filter: brightness(110%);
 }
 
 .format-button i {
@@ -125,11 +190,84 @@ footer {
     text-align: center;
     padding: 2rem 0;
     margin-top: 2rem;
-    background: var(--primary-color);
-    color: white;
+    background: var(--footer-bg);
+    color: var(--footer-text);
+    box-shadow: 0 -2px 4px rgba(0,0,0,0.1);
 }
 
 .support-section {
     margin: 2rem 0;
     text-align: center;
+}
+
+.github-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.8rem 1.5rem;
+    background: var(--primary-color);
+    color: var(--button-text);
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.github-button:hover {
+    background: var(--button-hover);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: var(--button-text);
+}
+
+.github-button i {
+    margin-right: 10px;
+    font-size: 1.2rem;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-bg);
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--card-shadow);
+    color: var(--text-color);
+    z-index: 1000;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+.theme-toggle i {
+    font-size: 1.2rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    .history-section {
+        padding: 1.5rem;
+    }
+
+    .date-list {
+        grid-template-columns: 1fr;
+    }
 } 

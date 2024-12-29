@@ -189,32 +189,139 @@ async function convertAllPagesToImages(datePath) {
 }
 
 /**
+ * Get the date for a specific week number
+ * @param {number} weekNum - Week number (1-52)
+ * @returns {Date} - Date object for the Sunday of that week
+ */
+function getDateForWeek(weekNum) {
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    
+    // Create a date for January 1st of the current year
+    const firstDay = new Date(currentYear, 0, 1);
+    
+    // Find the first Sunday of the year
+    const firstSunday = new Date(firstDay);
+    firstSunday.setDate(firstDay.getDate() + (7 - firstDay.getDay()));
+    
+    // Calculate the target Sunday by adding weeks
+    const targetSunday = new Date(firstSunday);
+    targetSunday.setDate(firstSunday.getDate() + ((weekNum - 1) * 7));
+    
+    return targetSunday;
+}
+
+/**
+ * Get current week number (1-52)
+ * @returns {number} - Current week number
+ */
+function getCurrentWeek() {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), 0, 1);
+    const pastDays = (today - firstDay) / 86400000;
+    return Math.ceil((pastDays + firstDay.getDay() + 1) / 7);
+}
+
+/**
+ * Parse a day argument in MM-DD format
+ * @param {string} dayArg - Day argument in MM-DD format
+ * @returns {Object} - Object with month and day numbers
+ */
+function parseSpecificDay(dayArg) {
+    const match = dayArg.match(/^(\d{2})-(\d{2})$/);
+    if (!match) {
+        throw new Error('Day must be in MM-DD format (e.g., 12-25)');
+    }
+    
+    const month = parseInt(match[1]);
+    const day = parseInt(match[2]);
+    
+    // Validate month and day
+    if (month < 1 || month > 12) {
+        throw new Error('Month must be between 01 and 12');
+    }
+    
+    // Get the last day of the specified month
+    const lastDay = new Date(new Date().getFullYear(), month, 0).getDate();
+    if (day < 1 || day > lastDay) {
+        throw new Error(`Day must be between 01 and ${String(lastDay).padStart(2, '0')} for month ${String(month).padStart(2, '0')}`);
+    }
+    
+    return { month, day };
+}
+
+/**
  * Main function - IIFE to allow async/await
- * Scrapes newspaper pages from 100 years ago today or for a week if --week argument is provided
+ * Scrapes newspaper pages from 100 years ago today, for a specific week, or for a specific day
  */
 (async () => {
-    // Check for --week argument
+    // Parse command line arguments
     const args = process.argv.slice(2);
-    const scrapeWeek = args.includes('--week');
+    let weekArg = args.findIndex(arg => arg.startsWith('--week'));
+    let dayArg = args.findIndex(arg => arg.startsWith('--day'));
+    let weekNum = null;
+    let specificDay = null;
+
+    // Check for mutually exclusive arguments
+    if (weekArg !== -1 && dayArg !== -1) {
+        console.error('Cannot use both --week and --day arguments together');
+        process.exit(1);
+    }
+    
+    if (weekArg !== -1) {
+        // Handle week argument (existing code)
+        const weekValue = args[weekArg].split('=')[1] || args[weekArg + 1];
+        if (weekValue && !isNaN(weekValue)) {
+            weekNum = parseInt(weekValue);
+            if (weekNum < 1 || weekNum > 52) {
+                console.error('Week number must be between 1 and 52');
+                process.exit(1);
+            }
+        } else {
+            console.error('Please provide a week number (1-52) with --week argument');
+            process.exit(1);
+        }
+    } else if (dayArg !== -1) {
+        // Handle day argument
+        const dayValue = args[dayArg].split('=')[1] || args[dayArg + 1];
+        if (!dayValue) {
+            console.error('Please provide a date in MM-DD format with --day argument');
+            process.exit(1);
+        }
+        
+        try {
+            specificDay = parseSpecificDay(dayValue);
+        } catch (error) {
+            console.error(`Error: ${error.message}`);
+            process.exit(1);
+        }
+    }
 
     // Initialize date
     const today = new Date();
     const startDate = new Date(today);
 
-    if (scrapeWeek) {
-        // Calculate the offset needed to get to the previous Sunday
-        const currentDay = today.getDay();
-        // Get to the previous Sunday (no need for century offset here)
-        const daysToSubtract = currentDay;
-        startDate.setDate(today.getDate() - daysToSubtract);
+    if (weekNum !== null) {
+        // Use the specified week
+        const targetSunday = getDateForWeek(weekNum);
+        startDate.setTime(targetSunday.getTime());
+    } else if (specificDay !== null) {
+        // Use the specified day
+        startDate.setMonth(specificDay.month - 1);
+        startDate.setDate(specificDay.day);
+    } else {
+        // Default to current week's Sunday
+        const currentWeek = getCurrentWeek();
+        const targetSunday = getDateForWeek(currentWeek);
+        startDate.setTime(targetSunday.getTime());
     }
 
     // Create end date for the loop
-    const endDate = scrapeWeek ? 
-        new Date(startDate.getTime() + (6 * 24 * 60 * 60 * 1000)) : // 6 days after start
-        new Date(today);
+    const endDate = specificDay !== null ? 
+        new Date(startDate.getTime()) : // Same day for specific day
+        new Date(startDate.getTime() + (6 * 24 * 60 * 60 * 1000)); // Week range
 
-    // Loop through each day of the week if --week is provided, otherwise just today
+    // Loop through the day(s)
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
         try {
             const { month, day, year } = formatDate(d);

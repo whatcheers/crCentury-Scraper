@@ -2,7 +2,7 @@
 
 A tool to scrape and display historical newspapers from the Cedar Rapids Evening Gazette archive, specifically targeting public domain editions from 100 years ago. 
 
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/dbsurplussolutions)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github)](https://github.com/whatcheer/crCentury-Scraper)
 
 ## Features
 
@@ -11,6 +11,7 @@ A tool to scrape and display historical newspapers from the Cedar Rapids Evening
 - Simple web viewer for browsing the archive
 - Organizes content by date in a clean directory structure
 - Combines pages into complete editions
+- Flexible date targeting (specific day, week number, or current week)
 
 ## Prerequisites (Tested on Ubuntu 24.04)
 
@@ -49,53 +50,70 @@ sudo apt-get install -y \
     libgbm1 \
     libasound2t64
 ```
+
 ## Running the App
 
-### Step 1: Download Today's Paper (from 100 years ago)
-To download today's edition from 100 years ago:
+### Downloading Papers
+
+You have several options for downloading papers from 100 years ago:
+
+1. **Current Week** (default):
 ```bash
 node gazette-scraper-100years.js
 ```
+Downloads the current week's papers from 100 years ago, starting from Sunday.
 
-This will:
-- Create a dated folder (e.g., "1924-12-29")
+2. **Specific Week Number**:
+```bash
+node gazette-scraper-100years.js --week 51
+# or
+node gazette-scraper-100years.js --week=51
+```
+Downloads papers from a specific week (1-52) from 100 years ago.
+
+3. **Specific Day**:
+```bash
+node gazette-scraper-100years.js --day 12-25
+# or
+node gazette-scraper-100years.js --day=12-25
+```
+Downloads a specific day's paper (format: MM-DD) from 100 years ago.
+
+Each download will:
+- Create a dated folder (e.g., "1924-12-25")
 - Download all pages as PDFs
 - Convert them to high-quality PNG images
 - Store everything in the dated folder
 
-### Step 2: Start the Viewer
-Once the download is complete, start the viewer:
+### Viewing the Archive
+
+1. Start the viewer:
 ```bash
 node gazette-viewer.js
 ```
 
-### Step 3: View the Paper
-1. Open your web browser
-2. Go to: `http://localhost:3000`
-3. Click on the date you want to view
-4. Use arrow keys to navigate between pages
-
-### Additional Options
-
-To download an entire week's worth of papers (from 100 years ago):
-```bash
-node gazette-scraper-100years.js --week
-```
+2. Open your web browser
+3. Go to: `http://localhost:3200`
+4. Browse available dates and choose viewing format:
+   - View as Images (high-quality PNG)
+   - View as PDFs (original format)
 
 ## Directory Structure
 
-After running, you'll see:
 ```
-.
-└── YYYY-MM-DD/          # Date folder (e.g., 1924-12-29)
-    ├── images/          # Contains the PNG images
-    │   ├── page_01.png
-    │   ├── page_02.png
-    │   └── ...
-    ├── page_01.pdf     # Original PDFs
-    ├── page_02.pdf
-    └── ...
+crCentury-Scraper/
+├── YYYY-MM-DD/           # Date-based folders
+│   ├── images/          # Converted PNG images
+│   ├── page_XX.pdf     # Individual page PDFs
+│   └── Complete.pdf    # Combined issue
+├── public/
+│   └── css/            # Styling
+└── node_modules/       # Dependencies
 ```
+
+## Support
+
+This is an open source project. Feel free to contribute by submitting issues, feature requests, or pull requests on GitHub.
 
 ## Contributing
 
@@ -104,12 +122,6 @@ Feel free to submit issues and enhancement requests.
 ## License
 
 MIT
-
-## Support
-
-If you find this tool useful, consider supporting the development:
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/dbsurplussolutions)
 
 ## Acknowledgments
 

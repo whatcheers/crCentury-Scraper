@@ -43,70 +43,92 @@ app.get('/', async (req, res) => {
 
         const html = `
             <!DOCTYPE html>
-            <html>
+            <html lang="en">
             <head>
-                <title>Cedar Rapids Evening Gazette Archive</title>
+                <title>Super Fancy Reddit Specific PDF Viewer</title>
+                <meta name="description" content="Historical newspaper viewer for The Evening Gazette from Cedar Rapids, Iowa - 100 years ago">
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
                 <link rel="preconnect" href="https://fonts.googleapis.com">
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
                 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
                 <link rel="stylesheet" href="/css/styles.css">
+                <script src="/js/theme.js" defer></script>
             </head>
             <body>
-                <header>
+                <button class="theme-toggle" aria-label="Toggle dark mode">
+                    <i class="fas fa-moon" aria-hidden="true"></i>
+                </button>
+
+                <header role="banner">
                     <div class="container">
-                        <h1>Cedar Rapids Evening Gazette Archive</h1>
-                        <div class="subtitle">Exploring History from 100 Years Ago</div>
+                        <h1>CRHistoryPorn - The Evening Gazette</h1>
+                        <div class="subtitle" role="doc-subtitle">Exploring Sunday Morning Cedar Rapids History from 100 Years Ago</div>
                     </div>
                 </header>
 
-                <div class="container">
-                    <section class="history-section">
-                        <h2>About The Evening Gazette</h2>
-                        <p>The Evening Gazette was a prominent daily newspaper based in Cedar Rapids, Iowa, first published on January 10, 1883. Initially known by this title, the paper later underwent name changes, including Cedar Rapids Evening Gazette and Evening Gazette and Republican, before becoming The Gazette.</p>
-                        <p>It served the northeastern and east-central Iowa regions, including the Cedar Rapids and Iowa City metropolitan areas, as a significant source of local news and information. Published from 1883 to 1912, the paper continued under different titles thereafter.</p>
-                        <p>Historical editions of the Evening Gazette are preserved in various archives, including the Cedar Rapids Public Library Community History Archive, Chronicling America, and NewspaperArchive.com. These resources provide valuable access to its historical content, making it a vital resource for researchers, genealogists, and history enthusiasts interested in Cedar Rapids' regional history.</p>
-                    </section>
-
-                    <h2>Available Archives</h2>
-                    <ul class="date-list">
-                        ${dateDirs.map(dir => `
-                            <li>
-                                <div class="date-header">${new Date(dir.date).toLocaleDateString('en-US', { 
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}</div>
-                                <div class="format-options">
-                                    ${dir.hasImages ? `
-                                        <a href="/view/${dir.date}" class="format-button">
-                                            <i class="fas fa-images"></i>
-                                            View Images
-                                        </a>
-                                    ` : ''}
-                                    ${dir.pdfs.length > 0 ? `
-                                        <a href="/view-pdfs/${dir.date}" class="format-button pdf">
-                                            <i class="fas fa-file-pdf"></i>
-                                            View PDFs (${dir.pdfs.length} pages)
-                                        </a>
-                                    ` : ''}
-                                </div>
-                            </li>
-                        `).join('')}
-                    </ul>
-
-                    <div class="support-section">
-                        <p>If you find this archive valuable, consider supporting its development:</p>
-                        <a href="https://ko-fi.com/dbsurplussolutions">
-                            <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support on Ko-fi">
-                        </a>
-                    </div>
-                </div>
-
-                <footer>
+                <main role="main">
                     <div class="container">
-                        <p>Data sourced from Cedar Rapids Public Library Community History Archive</p>
+                        <section class="history-section" aria-labelledby="about-heading">
+                            <h2 id="about-heading">About The Evening Gazette</h2>
+                            <p>The Evening Gazette was a prominent daily newspaper based in Cedar Rapids, Iowa, first published on January 10, 1883. Initially known by this title, the paper later underwent name changes, including Cedar Rapids Evening Gazette and Evening Gazette and Republican, before becoming The Gazette.</p>
+                            <p>It served the northeastern and east-central Iowa regions, including the Cedar Rapids and Iowa City metropolitan areas, as a significant source of local news and information. </p>
+                            <p>Historical editions of the Evening Gazette are preserved in various archives, including the Cedar Rapids Public Library, Advantage Archives, and various other sources. These resources provide valuable access to its historical content, making it a vital resource for researchers, genealogists, and history enthusiasts interested in Cedar Rapids' regional history.</p>
+
+                        <section aria-labelledby="archives-heading">
+                            <h2 id="archives-heading">Available Archives</h2>
+                            <ul class="date-list" role="list">
+                                ${dateDirs.map(dir => {
+                                    const formattedDate = new Date(dir.date).toLocaleDateString('en-US', { 
+                                        weekday: 'long',
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric'
+                                    });
+                                    return `
+                                    <li>
+                                        <div class="date-header" role="heading" aria-level="3">${formattedDate}</div>
+                                        <div class="format-options" role="group" aria-label="Viewing options for ${formattedDate}">
+                                            ${dir.hasImages ? `
+                                                <a href="/view/${dir.date}" 
+                                                   class="format-button"
+                                                   role="button"
+                                                   aria-label="View images from ${formattedDate}">
+                                                    <i class="fas fa-images" aria-hidden="true"></i>
+                                                    <span>View Images</span>
+                                                </a>
+                                            ` : ''}
+                                            ${dir.pdfs.length > 0 ? `
+                                                <a href="/view-pdfs/${dir.date}" 
+                                                   class="format-button pdf"
+                                                   role="button"
+                                                   aria-label="View PDF version from ${formattedDate} with ${dir.pdfs.length} pages">
+                                                    <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                                                    <span>View PDFs (${dir.pdfs.length} pages)</span>
+                                                </a>
+                                            ` : ''}
+                                        </div>
+                                    </li>
+                                `}).join('')}
+                            </ul>
+
+                            <div class="support-section">
+                                <p id="contribute-text">View project source code and contribute:</p>
+                                <a href="https://github.com/whatcheer/crCentury-Scraper" 
+                                   class="github-button"
+                                   role="button"
+                                   aria-labelledby="contribute-text">
+                                    <i class="fab fa-github" aria-hidden="true"></i>
+                                    <span>GitHub Repository</span>
+                                </a>
+                            </div>
+                        </section>
+                    </div>
+                </main>
+
+                <footer role="contentinfo">
+                    <div class="container">
                         <p>© ${new Date().getFullYear()} Archive Project</p>
                     </div>
                 </footer>
@@ -126,11 +148,19 @@ app.get('/view/:date', async (req, res) => {
         const imagesDir = path.join(date, 'images');
         const files = await fs.readdir(imagesDir);
         const images = files.filter(f => f.endsWith('.png')).sort();
+        const formattedDate = new Date(date).toLocaleDateString('en-US', { 
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
 
         const html = `
             <!DOCTYPE html>
-            <html>
+            <html lang="en">
             <head>
+                <title>Super Fancy Reddit Specific PDF Viewer - ${formattedDate}</title>
+                <meta name="description" content="View historical newspaper images from The Evening Gazette - ${formattedDate}">
                 <title>Gazette - ${date}</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
