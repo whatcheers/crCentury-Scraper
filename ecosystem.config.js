@@ -7,11 +7,12 @@ module.exports = {
     watch: false,
     max_memory_restart: '1G',
     env: {
-      NODE_ENV: 'development'
+      NODE_ENV: 'development',
+      BASE_PATH: '/home/whatcheer/crCentury-Scraper'
     },
     env_production: {
       NODE_ENV: 'production',
-      PORT: 3200
+      BASE_PATH: '/var/www/redditdev.cheesemonger.info'
     }
   }]
 }; 

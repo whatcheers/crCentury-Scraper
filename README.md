@@ -2,6 +2,8 @@
 
 A tool to scrape and display historical newspapers from the Cedar Rapids Evening Gazette archive, specifically targeting public domain editions from 100 years ago. 
 
+See live example: [redditdev.cheesemonger.info](https://redditdev.cheesemonger.info)
+
 [![GitHub Repository](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge&logo=github)](https://github.com/whatcheer/crCentury-Scraper)
 
 ## Features
@@ -18,10 +20,9 @@ A tool to scrape and display historical newspapers from the Cedar Rapids Evening
 
 ## Prerequisites (Tested on Ubuntu 24.04)
 
-- Node.js (v14 or higher)
+- Node.js (v18 or higher)
 - GraphicsMagick (`sudo apt-get install graphicsmagick`)
 - Ghostscript (`sudo apt-get install ghostscript`)
-- Chrome/Chromium (will be installed as a snap package)
 
 ## Installation
 
@@ -40,18 +41,7 @@ npm install
 ```bash
 # Update and install main applications
 sudo apt-get update
-sudo apt-get install graphicsmagick ghostscript chromium-browser
-
-# Install Chrome/Puppeteer dependencies
-sudo apt-get install -y \
-    libnss3 \
-    libatk1.0-0t64 \
-    libatk-bridge2.0-0t64 \
-    libcups2t64 \
-    libxkbcommon0 \
-    libgtk-3-0t64 \
-    libgbm1 \
-    libasound2t64
+sudo apt-get install graphicsmagick ghostscript
 ```
 
 ## Running the App
@@ -80,7 +70,7 @@ node gazette-scraper-100years.js --day 12-25
 # or
 node gazette-scraper-100years.js --day=12-25
 ```
-Downloads a specific day's paper (format: MM-DD) from 100 years ago.
+Downloads a specific day's paper (format: MM-DD) from 100 years ago. Please respect the bandwidth of the archives.
 
 Each download will:
 - Create a dated folder (e.g., "1924-12-25")
@@ -100,6 +90,12 @@ node gazette-viewer.js
 4. Browse available dates and choose viewing format:
    - View as Images (high-quality PNG)
    - View as PDFs (original format)
+
+The viewer provides:
+- Dark/Light theme toggle
+- Mobile-friendly interface
+- Zoom controls for images and PDFs
+- Easy navigation between pages
 
 ## Directory Structure
 
