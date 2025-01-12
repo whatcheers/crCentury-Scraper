@@ -11,7 +11,7 @@ const BASE_PATH = process.env.BASE_PATH || path.resolve('.');
 // Rate limiting middleware
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // limit each IP to 500 requests per windowMs (increased from 100)
+    max: 2000, // limit each IP to 2000 requests per windowMs
     message: 'Too many requests from this IP, please try again later.'
 });
 

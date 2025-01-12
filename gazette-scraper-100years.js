@@ -309,16 +309,11 @@ function parseSpecificDay(dayArg) {
         // Use the specified day
         startDate.setMonth(specificDay.month - 1);
         startDate.setDate(specificDay.day);
-    } else {
-        // Default to current week's Sunday
-        const currentWeek = getCurrentWeek();
-        const targetSunday = getDateForWeek(currentWeek);
-        startDate.setTime(targetSunday.getTime());
     }
 
     // Create end date for the loop
-    const endDate = specificDay !== null ? 
-        new Date(startDate.getTime()) : // Same day for specific day
+    const endDate = specificDay !== null || weekNum === null ? 
+        new Date(startDate.getTime()) : // Same day for specific day or default (today)
         new Date(startDate.getTime() + (6 * 24 * 60 * 60 * 1000)); // Week range
 
     // Loop through the day(s)
