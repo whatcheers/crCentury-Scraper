@@ -255,7 +255,8 @@ router.get('/', async (req, res) => {
                                         <a href="\${img.src}" 
                                            data-pswp-width="\${img.width}"
                                            data-pswp-height="\${img.height}"
-                                           target="_blank">
+                                           target="_blank"
+                                           id="img-\${(currentPage - 1) * 20 + index}">
                                             <figure>
                                                 <div class="loading-placeholder" style="aspect-ratio: 4/3;"></div>
                                                 <img 
@@ -263,7 +264,12 @@ router.get('/', async (req, res) => {
                                                     alt="\${img.title}"
                                                     class="lazy"
                                                 />
-                                                <figcaption>\${img.title}</figcaption>
+                                                <figcaption>
+                                                    \${img.title}
+                                                    <button class="share-button" onclick="showShareDialog(event, '\${img.src}', '\${img.title}', \${(currentPage - 1) * 20 + index})">
+                                                        <i class="fas fa-share-alt"></i>
+                                                    </button>
+                                                </figcaption>
                                             </figure>
                                         </a>
                                     \`;

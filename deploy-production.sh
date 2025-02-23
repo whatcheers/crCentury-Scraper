@@ -44,6 +44,7 @@ sudo chmod -R 775 $PM2_HOME
 # Copy necessary files from source directory
 echo "Copying files to production directory..."
 sudo cp -r $SOURCE_DIR/public $DEPLOY_DIR/
+sudo cp -r $SOURCE_DIR/src $DEPLOY_DIR/
 sudo cp $SOURCE_DIR/gazette-viewer.js $DEPLOY_DIR/
 sudo cp $SOURCE_DIR/package.json $DEPLOY_DIR/
 sudo cp $SOURCE_DIR/ecosystem.config.js $DEPLOY_DIR/

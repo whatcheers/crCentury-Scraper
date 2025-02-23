@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const rateLimit = require('express-rate-limit');
 const serveStatic = require('serve-static');
+const galleryRouter = require('./src/routes/gallery');
 
 const app = express();
 const port = process.env.PORT || 3200;
@@ -114,7 +115,7 @@ app.get('/', async (req, res) => {
                             <h2 id="about-heading">About The Evening Gazette</h2>
                             <p>The Evening Gazette was a prominent daily newspaper based in Cedar Rapids, Iowa, first published on January 10, 1883. Initially known by this title, the paper later underwent name changes, including Cedar Rapids Evening Gazette and Evening Gazette and Republican, before becoming The Gazette.</p>
                             <p>It served the northeastern and east-central Iowa regions, including the Cedar Rapids and Iowa City metropolitan areas, as a significant source of local news and information. </p>
-                            <p>Historical editions of the Evening Gazette are preserved in various archives, including the Cedar Rapids Public Library, Advantage Archives, and various other sources. These resources provide valuable access to its historical content, making it a vital resource for researchers, genealogists, and history enthusiasts interested in Cedar Rapids' regional history.</p>
+                            <p>Historical editions of the Evening Gazette are preserved in various archives, including the Cedar Rapids Public Library, <a href="https://www.advantagearchives.com/" target="_blank" rel="noopener noreferrer">Advantage Archives</a>, and various other sources. These resources provide valuable access to its historical content, making it a vital resource for researchers, genealogists, and history enthusiasts interested in Cedar Rapids' regional history.</p>
 
                         <section aria-labelledby="archives-heading">
                             <h2 id="archives-heading">Available Archives</h2>
@@ -412,6 +413,9 @@ app.get('/view-pdfs/:date', async (req, res) => {
         res.status(500).send('Error loading PDFs: ' + err.message);
     }
 });
+
+// Add gallery route
+app.use('/gallery', galleryRouter);
 
 app.listen(port, () => {
     console.log(`Gazette viewer running at http://localhost:${port}`);
