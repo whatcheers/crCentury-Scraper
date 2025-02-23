@@ -1,0 +1,513 @@
+/* Gallery styles */
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #34495e;
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --text-color: #2c3e50;
+    --border-color: #e9ecef;
+    --accent-color: #3498db;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 2px 4px var(--shadow-color);
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    font-family: 'Playfair Display', serif;
+}
+
+.back-link {
+    color: white;
+    text-decoration: none;
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.75rem 1.25rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.back-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%) translateX(2px);
+}
+
+.gallery-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Gallery Grid */
+.gallery-grid {
+    margin: 0;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+.gallery-grid.loaded {
+    opacity: 1;
+}
+
+.gallery-item {
+    width: 100%;
+    margin: 0;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+    break-inside: avoid;
+    page-break-inside: avoid;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gallery-item figure {
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    background: var(--card-background);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.gallery-item figure:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px var(--shadow-color);
+}
+
+.gallery-item img {
+    width: 100%;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+    display: block;
+    transition: all 0.4s ease;
+    border-radius: 12px 12px 0 0;
+    background-color: #f0f0f0;
+}
+
+.gallery-item img.loading {
+    filter: blur(10px);
+}
+
+.gallery-item img.loaded {
+    filter: blur(0);
+}
+
+.gallery-item figcaption {
+    padding: 1.25rem;
+    background: var(--card-background);
+    color: var(--text-color);
+    font-size: 1rem;
+    border-top: 1px solid var(--border-color);
+    font-weight: 500;
+    text-align: center;
+}
+
+/* PhotoSwipe Customization */
+.pswp__bg {
+    background: rgba(0, 0, 0, 0.95) !important;
+}
+
+.pswp__img {
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.pswp__caption {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+}
+
+.pswp__caption__center {
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 1.1rem;
+    text-align: center;
+    color: white;
+    font-family: 'Playfair Display', serif;
+}
+
+/* Pagination */
+.pagination {
+    margin: 4rem auto;
+    text-align: center;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    max-width: 600px;
+}
+
+.pagination a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 2rem;
+    background-color: var(--accent-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    min-width: 44px;
+    min-height: 44px;
+    font-weight: 600;
+    box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.pagination a:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px var(--shadow-color);
+}
+
+.pagination span {
+    color: var(--secondary-color);
+    font-weight: 600;
+    padding: 1rem 2rem;
+    background-color: var(--card-background);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+/* Loading Animation */
+.loading-indicator {
+    text-align: center;
+    padding: 2rem;
+    margin: 2rem auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Gallery Button */
+.gallery-link {
+    margin-top: 2rem;
+}
+
+.gallery-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background-color: var(--accent-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+    font-weight: 600;
+    box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.gallery-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px var(--shadow-color);
+    background-color: #2980b9;
+}
+
+.gallery-button i {
+    font-size: 1.2rem;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 1200px) {
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
+        padding: 1.25rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .gallery-container {
+        padding: 0;
+    }
+    
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .pagination {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+    }
+    
+    .pagination a,
+    .pagination span {
+        width: 100%;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-color: #1a1f25;
+        --secondary-color: #2c3e50;
+        --background-color: #121212;
+        --card-background: #1e1e1e;
+        --text-color: #e0e0e0;
+        --border-color: #2c2c2c;
+        --accent-color: #2980b9;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+    }
+    
+    .gallery-item figure {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    }
+    
+    .gallery-item figure:hover {
+        box-shadow: 0 16px 24px rgba(0, 0, 0, 0.5);
+    }
+    
+    .pswp__bg {
+        background: rgba(0, 0, 0, 0.98) !important;
+    }
+    
+    .loading-placeholder {
+        background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
+    }
+}
+
+/* Share Button */
+.share-button {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0.75rem;
+    margin-left: 0.5rem;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-button:hover {
+    opacity: 1;
+}
+
+/* Share Dialog */
+.share-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.share-dialog.active {
+    display: flex;
+}
+
+.share-content {
+    background: var(--card-background);
+    padding: 2rem;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    padding: 0.75rem;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-button:hover {
+    opacity: 1;
+}
+
+.share-content h3 {
+    margin: 0 0 1.5rem 0;
+    font-family: 'Playfair Display', serif;
+    color: var(--text-color);
+}
+
+.share-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.share-option {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.share-option input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--background-color);
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.copy-button {
+    padding: 0.75rem 1.5rem;
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.copy-button:hover {
+    background-color: #2980b9;
+}
+
+.social-share {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.social-share button {
+    flex: 1;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-width: 120px;
+}
+
+.social-share .facebook {
+    background-color: #1877f2;
+}
+
+.social-share .twitter {
+    background-color: #1da1f2;
+}
+
+.social-share .pinterest {
+    background-color: #bd081c;
+}
+
+.social-share button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile Adjustments */
+@media screen and (max-width: 768px) {
+    .share-content {
+        padding: 1.5rem;
+        width: 95%;
+    }
+
+    .social-share {
+        flex-direction: column;
+    }
+
+    .social-share button {
+        width: 100%;
+    }
+
+    .share-option {
+        flex-direction: column;
+    }
+
+    .copy-button {
+        width: 100%;
+    }
+} 
