@@ -46,29 +46,37 @@ function safeLog(message) {
  * @returns {Promise<number>} - Total number of pages
  */
 async function getTotalPages(frame) {
-    try {
-        // Wait for the iframe content to load
-        await frame.waitForSelector('#drpGoToPage', { 
-            timeout: 15000,
-            visible: true 
-        });
-        
-        // Get the total pages from the dropdown
-        const totalPages = await frame.evaluate(() => {
-            const dropdown = document.querySelector('#drpGoToPage');
-            const options = Array.from(dropdown.options);
-            // Extract the total pages from the "X/Y" format in the last option
-            const lastOption = options[options.length - 1];
-            const match = lastOption.text.match(/\d+\/(\d+)/);
-            return match ? parseInt(match[1]) : 0;
-        });
+    // Use retry mechanism for getting total pages
+    return retry(async () => {
+        try {
+            // Wait for the iframe content to load
+            await frame.waitForSelector('#drpGoToPage', { 
+                timeout: 15000,
+                visible: true 
+            });
+            
+            // Get the total pages from the dropdown
+            const totalPages = await frame.evaluate(() => {
+                const dropdown = document.querySelector('#drpGoToPage');
+                const options = Array.from(dropdown.options);
+                // Extract the total pages from the "X/Y" format in the last option
+                const lastOption = options[options.length - 1];
+                const match = lastOption.text.match(/\d+\/(\d+)/);
+                return match ? parseInt(match[1]) : 0;
+            });
 
-        safeLog(`Found dropdown with ${totalPages} pages`);
-        return totalPages;
-    } catch (error) {
-        safeLog(`Error getting total pages: ${error.message}`);
-        throw error;
-    }
+            safeLog(`Found dropdown with ${totalPages} pages`);
+            
+            if (totalPages === 0) {
+                throw new Error('Could not determine total pages or no pages found');
+            }
+            
+            return totalPages;
+        } catch (error) {
+            safeLog(`Error getting total pages: ${error.message}`);
+            throw error;
+        }
+    }, 3, 2000); // 3 retries with 2 second initial delay
 }
 
 /**
@@ -165,22 +173,33 @@ async function convertAllPagesToImages(datePath) {
                 quality: 100
             };
 
-            try {
-                const convert = fromPath(pdfPath, options);
-                const result = await convert(1);
-                
-                if (result) {
+            // Use retry mechanism for converting PDFs to images
+            await retry(async () => {
+                try {
+                    const convert = fromPath(pdfPath, options);
+                    const result = await convert(1);
+                    
+                    if (!result) {
+                        throw new Error(`No result returned for ${pdfFile}`);
+                    }
+                    
                     // Rename the file to remove the .1 suffix
                     const oldPath = path.join(imagesDir, `${options.saveFilename}.1.png`);
                     const newPath = path.join(imagesDir, `${options.saveFilename}.png`);
+                    
+                    // Check if the file exists before renaming
+                    const fileExists = await fs.access(oldPath).then(() => true).catch(() => false);
+                    if (!fileExists) {
+                        throw new Error(`Converted file not found: ${oldPath}`);
+                    }
+                    
                     await fs.rename(oldPath, newPath);
                     safeLog(`Successfully converted ${pdfFile} to image`);
-                } else {
-                    safeLog(`Warning: No result returned for ${pdfFile}`);
+                } catch (error) {
+                    safeLog(`Error in conversion attempt for ${pdfFile}: ${error.message}`);
+                    throw error; // Rethrow to trigger retry
                 }
-            } catch (error) {
-                safeLog(`Error converting ${pdfFile}: ${error.message}`);
-            }
+            }, 3, 2000);  // 3 retries with 2 second initial delay
         }
     } catch (error) {
         safeLog(`Error in convertAllPagesToImages: ${error.message}`);
@@ -251,6 +270,40 @@ function parseSpecificDay(dayArg) {
 }
 
 /**
+ * Retry a function with exponential backoff
+ * @param {Function} fn - The function to retry
+ * @param {number} maxRetries - Maximum number of retries
+ * @param {number} initialDelay - Initial delay in milliseconds
+ * @returns {Promise} - Result of the function
+ */
+async function retry(fn, maxRetries = 3, initialDelay = 1000) {
+    let retries = 0;
+    let lastError;
+
+    while (retries <= maxRetries) {
+        try {
+            return await fn();
+        } catch (error) {
+            lastError = error;
+            retries++;
+            
+            if (retries > maxRetries) {
+                break;
+            }
+            
+            // Calculate delay with exponential backoff
+            const delay = initialDelay * Math.pow(2, retries - 1);
+            safeLog(`Retry ${retries}/${maxRetries} after ${delay}ms: ${error.message}`);
+            
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }
+    
+    throw lastError;
+}
+
+/**
  * Main function - IIFE to allow async/await
  * Scrapes newspaper pages from 100 years ago today, for a specific week, or for a specific day
  */
@@ -317,7 +370,9 @@ function parseSpecificDay(dayArg) {
         new Date(startDate.getTime() + (6 * 24 * 60 * 60 * 1000)); // Week range
 
     // Loop through the day(s)
+    let processingErrors = [];
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        let browser = null;
         try {
             const { month, day, year } = formatDate(d);
             const dateRange = formatDateRange(d);
@@ -327,7 +382,7 @@ function parseSpecificDay(dayArg) {
             safeLog(`Working directory: ${datePath}`);
 
             // Setup Puppeteer with download path set to dated folder
-            const browser = await puppeteer.launch({
+            browser = await puppeteer.launch({
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 defaultViewport: { width: 2005, height: 1277 }
@@ -368,38 +423,57 @@ function parseSpecificDay(dayArg) {
                     const url = `https://cedarrapids.advantage-preservation.com/viewer/?k=gazette&i=f&by=${year}&bdd=1920&d=${dateRange}&m=between&ord=k1&fn=evening_gazette_usa_iowa_cedar_rapids_${year}${month}${day}_english_${pageNum}&df=1&dt=10`;
 
                     safeLog(`Downloading page ${pageNum}...`);
-                    await page.goto(url);
+                    
+                    // Use retry mechanism for downloading
+                    await retry(async () => {
+                        await page.goto(url);
 
-                    const frameHandle = await page.waitForSelector('iframe', { timeout });
-                    const frame = await frameHandle.contentFrame();
-                    await frame.waitForSelector('#download', { timeout });
-                    
-                    // Set up file rename watcher before clicking download
-                    const oldPath = path.join(datePath, `Cedar Rapids Evening Gazette, Page${pageNum}, ${year}-${month}-${day}.pdf`);
-                    const newPath = path.join(datePath, `page_${String(pageNum).padStart(2, '0')}.pdf`);
-                    
-                    // Start download
-                    await frame.click('#download');
-                    
-                    // Wait for download to complete
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    
-                    // Rename the file
-                    try {
-                        await fs.rename(oldPath, newPath);
-                        safeLog(`Downloaded and renamed page ${pageNum}`);
-                    } catch (error) {
-                        safeLog(`Error renaming page ${pageNum}: ${error.message}`);
-                    }
+                        const frameHandle = await page.waitForSelector('iframe', { timeout });
+                        const frame = await frameHandle.contentFrame();
+                        await frame.waitForSelector('#download', { timeout });
+                        
+                        // Set up file rename watcher before clicking download
+                        const oldPath = path.join(datePath, `Cedar Rapids Evening Gazette, Page${pageNum}, ${year}-${month}-${day}.pdf`);
+                        const newPath = path.join(datePath, `page_${String(pageNum).padStart(2, '0')}.pdf`);
+                        
+                        // Start download
+                        await frame.click('#download');
+                        
+                        // Wait for download to complete with a longer timeout
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                        
+                        // Check if the file exists and retry if it doesn't
+                        const fileExists = await fs.access(oldPath).then(() => true).catch(() => false);
+                        if (!fileExists) {
+                            throw new Error(`File was not downloaded: ${oldPath}`);
+                        }
+                        
+                        // Rename the file
+                        try {
+                            await fs.rename(oldPath, newPath);
+                            safeLog(`Downloaded and renamed page ${pageNum}`);
+                        } catch (error) {
+                            safeLog(`Error renaming page ${pageNum}: ${error.message}`);
+                            throw error; // Rethrow to trigger retry
+                        }
+                    }, 3, 2000);  // 3 retries with 2 second initial delay
 
                 } catch (error) {
-                    safeLog(`Error downloading page ${pageNum}: ${error.message}`);
+                    safeLog(`Error downloading page ${pageNum} after all retries: ${error.message}`);
+                    // Continue with next page instead of failing the whole day
                 }
             }
 
             // Close browser after downloads
             await browser.close();
+            browser = null;
             safeLog('All PDFs downloaded');
+
+            // Check if any PDFs were successfully downloaded
+            const downloadedFiles = (await fs.readdir(datePath)).filter(file => file.endsWith('.pdf'));
+            if (downloadedFiles.length === 0) {
+                throw new Error('No PDFs were successfully downloaded');
+            }
 
             // Second: Convert all PDFs to images
             safeLog('Converting PDFs to images...');
@@ -408,20 +482,52 @@ function parseSpecificDay(dayArg) {
 
             // Third: Combine PDFs (modify gazette-combine.js to use dated folder)
             safeLog('Combining PDFs...');
-            exec(`node gazette-combine.js "${datePath}"`, (error, stdout, stderr) => {
-                if (error) {
-                    safeLog(`Error combining PDFs: ${error.message}`);
-                    return;
-                }
-                if (stderr) {
-                    safeLog(`stderr: ${stderr}`);
-                    return;
-                }
-                safeLog(`stdout: ${stdout}`);
+            const combineResult = await new Promise((resolve) => {
+                exec(`node gazette-combine.js "${datePath}"`, (error, stdout, stderr) => {
+                    if (error) {
+                        safeLog(`Error combining PDFs: ${error.message}`);
+                        resolve({ success: false, error: error.message });
+                        return;
+                    }
+                    if (stderr) {
+                        safeLog(`stderr: ${stderr}`);
+                        resolve({ success: false, error: stderr });
+                        return;
+                    }
+                    safeLog(`stdout: ${stdout}`);
+                    resolve({ success: true });
+                });
             });
 
+            if (!combineResult.success) {
+                throw new Error(`Error combining PDFs: ${combineResult.error}`);
+            }
+
+            safeLog(`Successfully processed ${month}/${day}/${year}`);
+
         } catch (error) {
-            safeLog(`Fatal error: ${error.message}`);
+            const errorMsg = `Error processing ${d.toISOString().split('T')[0]}: ${error.message}`;
+            safeLog(errorMsg);
+            processingErrors.push(errorMsg);
+        } finally {
+            // Ensure browser is closed even if there was an error
+            if (browser) {
+                try {
+                    await browser.close();
+                } catch (err) {
+                    safeLog(`Error closing browser: ${err.message}`);
+                }
+            }
         }
     }
+
+    // Report any errors at the end
+    if (processingErrors.length > 0) {
+        safeLog('The following errors occurred during processing:');
+        processingErrors.forEach(err => safeLog(` - ${err}`));
+        process.exit(1); // Exit with error code
+    }
+
+    safeLog('All dates processed successfully');
+    process.exit(0); // Exit successfully
 })();

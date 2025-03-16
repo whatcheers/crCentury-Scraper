@@ -126,3 +126,65 @@ MIT
 - Cedar Rapids Public Library
 - Advantage Archives for maintaining the digital archive
 - CR Gazette for the original newspaper
+
+## Automated Scraping
+
+The project includes scripts to automate the scraping process and deployment:
+
+### Automated Weekly Scraping
+
+The system is configured to automatically run the gazette scraper every Sunday at 1 AM and deploy the results if successful. This is handled by several scripts:
+
+1. `automate-scraper.sh` - Runs the gazette scraper and then the deployment script if successful
+2. `setup-cron.sh` - Sets up the cron job to run the automation script weekly
+3. `deploy-wrapper.sh` - A wrapper script for secure deployment
+4. `setup-sudoers.sh` - Sets up the necessary sudo permissions
+
+#### Secure Setup Instructions
+
+To set up the automated weekly scraping securely:
+
+1. First, set up the sudo permissions (one-time setup, requires admin privileges):
+```bash
+# Make the script executable
+chmod +x setup-sudoers.sh
+
+# Run the setup script with sudo
+sudo ./setup-sudoers.sh
+```
+
+2. Then, set up the cron job:
+```bash
+# Make the scripts executable
+chmod +x setup-cron.sh automate-scraper.sh deploy-wrapper.sh
+
+# Run the setup script to create the cron job
+./setup-cron.sh
+```
+
+3. Verify that the cron job is set up correctly:
+```bash
+crontab -l
+```
+
+You should see a line like:
+```
+0 1 * * 0 /home/whatcheer/crCentury-Scraper/automate-scraper.sh
+```
+
+### Logs
+
+Logs from the automated scraping process are stored in the `logs` directory:
+
+- `scraper-YYYY-MM-DD.log` - General log file for each run
+- `scraper-error-YYYY-MM-DD.log` - Error log file (only contains error messages)
+
+Logs older than 30 days are automatically deleted.
+
+### Manual Execution
+
+To manually run the scraper and deployment:
+
+```bash
+./automate-scraper.sh
+```
