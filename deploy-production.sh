@@ -49,6 +49,10 @@ sudo cp $SOURCE_DIR/gazette-viewer.js $DEPLOY_DIR/
 sudo cp $SOURCE_DIR/package.json $DEPLOY_DIR/
 sudo cp $SOURCE_DIR/ecosystem.config.js $DEPLOY_DIR/
 
+# Copy HTML files from root directory
+echo "Copying HTML files..."
+sudo cp $SOURCE_DIR/*.html $DEPLOY_DIR/
+
 # Copy newspaper archives (date folders)
 echo "Copying newspaper archives..."
 for dir in $SOURCE_DIR/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]/; do

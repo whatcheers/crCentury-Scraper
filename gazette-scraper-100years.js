@@ -270,6 +270,27 @@ function parseSpecificDay(dayArg) {
 }
 
 /**
+ * Creates a promise that rejects after a specified timeout
+ * @param {number} ms - Timeout in milliseconds
+ * @returns {Promise<never>} - A promise that rejects after the timeout
+ */
+function timeout(ms) {
+    return new Promise((_, reject) => {
+        setTimeout(() => reject(new Error(`Operation timed out after ${ms}ms`)), ms);
+    });
+}
+
+/**
+ * Executes a promise with a timeout
+ * @param {Promise} promise - The promise to execute
+ * @param {number} ms - Timeout in milliseconds
+ * @returns {Promise} - The original promise with a timeout
+ */
+function withTimeout(promise, ms) {
+    return Promise.race([promise, timeout(ms)]);
+}
+
+/**
  * Retry a function with exponential backoff
  * @param {Function} fn - The function to retry
  * @param {number} maxRetries - Maximum number of retries
@@ -287,12 +308,32 @@ async function retry(fn, maxRetries = 3, initialDelay = 1000) {
             lastError = error;
             retries++;
             
+            // Check for specific network errors that might indicate serious connectivity issues
+            const errorText = error.message.toLowerCase();
+            const isFatalNetworkError = 
+                errorText.includes('net::err_internet_disconnected') || 
+                errorText.includes('net::err_proxy_connection_failed') ||
+                errorText.includes('net::err_connection_refused');
+                
+            if (isFatalNetworkError) {
+                safeLog(`Fatal network error detected: ${error.message}`);
+                // For fatal network errors, wait longer before retrying
+                await new Promise(resolve => setTimeout(resolve, 30000));
+                
+                // Verify connection is available before continuing
+                const isConnected = await checkInternetConnection();
+                if (!isConnected && retries >= maxRetries / 2) {
+                    safeLog('Internet connection is still unavailable. Giving up.');
+                    throw new Error(`Internet connection is unavailable after ${retries} retries.`);
+                }
+            }
+            
             if (retries > maxRetries) {
                 break;
             }
             
-            // Calculate delay with exponential backoff
-            const delay = initialDelay * Math.pow(2, retries - 1);
+            // Calculate delay with exponential backoff and some randomness
+            const delay = initialDelay * Math.pow(2, retries - 1) + Math.floor(Math.random() * 1000);
             safeLog(`Retry ${retries}/${maxRetries} after ${delay}ms: ${error.message}`);
             
             // Wait before retrying
@@ -301,6 +342,44 @@ async function retry(fn, maxRetries = 3, initialDelay = 1000) {
     }
     
     throw lastError;
+}
+
+/**
+ * Check if internet connection is available
+ * @returns {Promise<boolean>} - True if connection is available
+ */
+async function checkInternetConnection() {
+    try {
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            timeout: 5000
+        });
+        
+        const page = await browser.newPage();
+        await page.goto('https://www.google.com', { 
+            waitUntil: 'networkidle0',
+            timeout: 5000
+        });
+        
+        await browser.close();
+        return true;
+    } catch (error) {
+        safeLog(`Internet connection check failed: ${error.message}`);
+        return false;
+    }
+}
+
+/**
+ * Wait for a random amount of time within a range
+ * @param {number} min - Minimum time to wait in ms
+ * @param {number} max - Maximum time to wait in ms
+ * @returns {Promise<void>}
+ */
+async function randomDelay(min = 1000, max = 3000) {
+    const delay = Math.floor(Math.random() * (max - min + 1)) + min;
+    safeLog(`Waiting for ${delay}ms before continuing...`);
+    return new Promise(resolve => setTimeout(resolve, delay));
 }
 
 /**
@@ -374,150 +453,187 @@ async function retry(fn, maxRetries = 3, initialDelay = 1000) {
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
         let browser = null;
         try {
-            const { month, day, year } = formatDate(d);
-            const dateRange = formatDateRange(d);
-            const datePath = await createDatedFolders(year, month, day);
-
-            safeLog(`Scraping Cedar Rapids Evening Gazette for ${month}/${day}/${year}`);
-            safeLog(`Working directory: ${datePath}`);
-
-            // Setup Puppeteer with download path set to dated folder
-            browser = await puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'],
-                defaultViewport: { width: 2005, height: 1277 }
-            });
-
-            const page = await browser.newPage();
-            const timeout = 10000;
-            page.setDefaultTimeout(timeout);
-
-            // Configure download behavior to use dated folder
-            const client = await page.target().createCDPSession();
-            await client.send('Page.setDownloadBehavior', {
-                behavior: 'allow',
-                downloadPath: datePath
-            });
-
-            // Set user agent to avoid detection
-            await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3');
-
-            // Load first page and determine total pages
-            safeLog('Loading first page to determine total pages...');
-            await page.goto(`https://cedarrapids.advantage-preservation.com/viewer/?k=gazette&i=f&by=${year}&bdd=1920&d=${dateRange}&m=between&ord=k1&fn=evening_gazette_usa_iowa_cedar_rapids_${year}${month}${day}_english_1&df=1&dt=10`, { waitUntil: 'networkidle0', timeout: 30000 });
-
-            const frameHandle = await page.waitForSelector('iframe', { timeout: 30000 });
-            const frame = await frameHandle.contentFrame();
-            await frame.waitForSelector('#drpGoToPage', { visible: true, timeout: 15000 });
-
-            const totalPages = await getTotalPages(frame);
-            safeLog(`Detected ${totalPages} pages for this edition`);
-
-            if (totalPages === 0) {
-                throw new Error('Could not determine total pages or no pages found');
-            }
-
-            // First: Download all PDFs
-            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+            // Process this day with an overall timeout of 3 hours
+            await withTimeout((async () => {
                 try {
-                    const url = `https://cedarrapids.advantage-preservation.com/viewer/?k=gazette&i=f&by=${year}&bdd=1920&d=${dateRange}&m=between&ord=k1&fn=evening_gazette_usa_iowa_cedar_rapids_${year}${month}${day}_english_${pageNum}&df=1&dt=10`;
+                    // Check internet connection before proceeding
+                    safeLog('Checking internet connection...');
+                    const isConnected = await checkInternetConnection();
+                    if (!isConnected) {
+                        safeLog('Internet connection is unavailable. Waiting 30 seconds before retrying...');
+                        await new Promise(resolve => setTimeout(resolve, 30000));
+                        const retryConnection = await checkInternetConnection();
+                        if (!retryConnection) {
+                            throw new Error('Internet connection is unavailable. Skipping this day.');
+                        }
+                        safeLog('Internet connection is now available. Proceeding...');
+                    }
 
-                    safeLog(`Downloading page ${pageNum}...`);
+                    const { month, day, year } = formatDate(d);
+                    const dateRange = formatDateRange(d);
+                    const datePath = await createDatedFolders(year, month, day);
+
+                    safeLog(`Scraping Cedar Rapids Evening Gazette for ${month}/${day}/${year}`);
+                    safeLog(`Working directory: ${datePath}`);
+
+                    // Setup Puppeteer with download path set to dated folder
+                    browser = await puppeteer.launch({
+                        headless: true,
+                        args: [
+                            '--no-sandbox',
+                            '--disable-setuid-sandbox',
+                            '--disable-dev-shm-usage',  // Add this to prevent browser crashes
+                            '--disable-features=site-per-process',  // Improves stability
+                        ],
+                        defaultViewport: { width: 2005, height: 1277 }
+                    });
+
+                    const page = await browser.newPage();
+                    const timeout = 10000;
+                    page.setDefaultTimeout(timeout);
+
+                    // Configure download behavior to use dated folder
+                    const client = await page.target().createCDPSession();
+                    await client.send('Page.setDownloadBehavior', {
+                        behavior: 'allow',
+                        downloadPath: datePath
+                    });
+
+                    // Set user agent to avoid detection
+                    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3');
+
+                    // Load first page and determine total pages
+                    safeLog('Loading first page to determine total pages...');
                     
-                    // Use retry mechanism for downloading
-                    await retry(async () => {
-                        await page.goto(url);
+                    // Add retry logic for the initial page load
+                    const frame = await retry(async () => {
+                        await page.goto(`https://cedarrapids.advantage-preservation.com/viewer/?k=gazette&i=f&by=${year}&bdd=1920&d=${dateRange}&m=between&ord=k1&fn=evening_gazette_usa_iowa_cedar_rapids_${year}${month}${day}_english_1&df=1&dt=10`, { 
+                            waitUntil: 'networkidle0', 
+                            timeout: 30000 
+                        });
 
-                        const frameHandle = await page.waitForSelector('iframe', { timeout });
+                        const frameHandle = await page.waitForSelector('iframe', { timeout: 30000 });
                         const frame = await frameHandle.contentFrame();
-                        await frame.waitForSelector('#download', { timeout });
+                        await frame.waitForSelector('#drpGoToPage', { visible: true, timeout: 15000 });
                         
-                        // Set up file rename watcher before clicking download
-                        const oldPath = path.join(datePath, `Cedar Rapids Evening Gazette, Page${pageNum}, ${year}-${month}-${day}.pdf`);
-                        const newPath = path.join(datePath, `page_${String(pageNum).padStart(2, '0')}.pdf`);
-                        
-                        // Start download
-                        await frame.click('#download');
-                        
-                        // Wait for download to complete with a longer timeout
-                        await new Promise(resolve => setTimeout(resolve, 5000));
-                        
-                        // Check if the file exists and retry if it doesn't
-                        const fileExists = await fs.access(oldPath).then(() => true).catch(() => false);
-                        if (!fileExists) {
-                            throw new Error(`File was not downloaded: ${oldPath}`);
-                        }
-                        
-                        // Rename the file
+                        return frame; // Return the frame for later use
+                    }, 3, 5000); // More retries (3) with longer delay (5 seconds)
+
+                    const totalPages = await getTotalPages(frame);
+                    safeLog(`Detected ${totalPages} pages for this edition`);
+
+                    if (totalPages === 0) {
+                        throw new Error('Could not determine total pages or no pages found');
+                    }
+
+                    // First: Download all PDFs
+                    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
                         try {
-                            await fs.rename(oldPath, newPath);
-                            safeLog(`Downloaded and renamed page ${pageNum}`);
+                            const url = `https://cedarrapids.advantage-preservation.com/viewer/?k=gazette&i=f&by=${year}&bdd=1920&d=${dateRange}&m=between&ord=k1&fn=evening_gazette_usa_iowa_cedar_rapids_${year}${month}${day}_english_${pageNum}&df=1&dt=10`;
+
+                            safeLog(`Downloading page ${pageNum}...`);
+                            
+                            // Add a random delay between page downloads
+                            await randomDelay(2000, 5000);
+                            
+                            // Use retry mechanism for downloading
+                            await retry(async () => {
+                                await page.goto(url);
+
+                                const frameHandle = await page.waitForSelector('iframe', { timeout });
+                                const frame = await frameHandle.contentFrame();
+                                await frame.waitForSelector('#download', { timeout });
+                                
+                                // Set up file rename watcher before clicking download
+                                const oldPath = path.join(datePath, `Cedar Rapids Evening Gazette, Page${pageNum}, ${year}-${month}-${day}.pdf`);
+                                const newPath = path.join(datePath, `page_${String(pageNum).padStart(2, '0')}.pdf`);
+                                
+                                // Start download
+                                await frame.click('#download');
+                                
+                                // Wait for download to complete with a longer timeout
+                                await new Promise(resolve => setTimeout(resolve, 5000));
+                                
+                                // Check if the file exists and retry if it doesn't
+                                const fileExists = await fs.access(oldPath).then(() => true).catch(() => false);
+                                if (!fileExists) {
+                                    throw new Error(`File was not downloaded: ${oldPath}`);
+                                }
+                                
+                                // Rename the file
+                                try {
+                                    await fs.rename(oldPath, newPath);
+                                    safeLog(`Downloaded and renamed page ${pageNum}`);
+                                } catch (error) {
+                                    safeLog(`Error renaming page ${pageNum}: ${error.message}`);
+                                    throw error; // Rethrow to trigger retry
+                                }
+                            }, 3, 2000);  // 3 retries with 2 second initial delay
+
                         } catch (error) {
-                            safeLog(`Error renaming page ${pageNum}: ${error.message}`);
-                            throw error; // Rethrow to trigger retry
+                            safeLog(`Error downloading page ${pageNum} after all retries: ${error.message}`);
+                            // Continue with next page instead of failing the whole day
                         }
-                    }, 3, 2000);  // 3 retries with 2 second initial delay
+                    }
 
-                } catch (error) {
-                    safeLog(`Error downloading page ${pageNum} after all retries: ${error.message}`);
-                    // Continue with next page instead of failing the whole day
+                    // Close browser after downloads
+                    await browser.close();
+                    browser = null;
+                    safeLog('All PDFs downloaded');
+
+                    // Check if any PDFs were successfully downloaded
+                    const downloadedFiles = (await fs.readdir(datePath)).filter(file => file.endsWith('.pdf'));
+                    if (downloadedFiles.length === 0) {
+                        throw new Error('No PDFs were successfully downloaded');
+                    }
+
+                    // Second: Convert all PDFs to images
+                    safeLog('Converting PDFs to images...');
+                    await convertAllPagesToImages(datePath);
+                    safeLog('Finished converting to images');
+
+                    // Third: Combine PDFs (modify gazette-combine.js to use dated folder)
+                    safeLog('Combining PDFs...');
+                    const combineResult = await new Promise((resolve) => {
+                        exec(`node gazette-combine.js "${datePath}"`, (error, stdout, stderr) => {
+                            if (error) {
+                                safeLog(`Error combining PDFs: ${error.message}`);
+                                resolve({ success: false, error: error.message });
+                                return;
+                            }
+                            if (stderr) {
+                                safeLog(`stderr: ${stderr}`);
+                                resolve({ success: false, error: stderr });
+                                return;
+                            }
+                            safeLog(`stdout: ${stdout}`);
+                            resolve({ success: true });
+                        });
+                    });
+
+                    if (!combineResult.success) {
+                        throw new Error(`Error combining PDFs: ${combineResult.error}`);
+                    }
+
+                    safeLog(`Successfully processed ${month}/${day}/${year}`);
+                } finally {
+                    if (browser) {
+                        try {
+                            await browser.close();
+                            browser = null;
+                        } catch (err) {
+                            safeLog(`Error closing browser: ${err.message}`);
+                        }
+                    }
                 }
-            }
-
-            // Close browser after downloads
-            await browser.close();
-            browser = null;
-            safeLog('All PDFs downloaded');
-
-            // Check if any PDFs were successfully downloaded
-            const downloadedFiles = (await fs.readdir(datePath)).filter(file => file.endsWith('.pdf'));
-            if (downloadedFiles.length === 0) {
-                throw new Error('No PDFs were successfully downloaded');
-            }
-
-            // Second: Convert all PDFs to images
-            safeLog('Converting PDFs to images...');
-            await convertAllPagesToImages(datePath);
-            safeLog('Finished converting to images');
-
-            // Third: Combine PDFs (modify gazette-combine.js to use dated folder)
-            safeLog('Combining PDFs...');
-            const combineResult = await new Promise((resolve) => {
-                exec(`node gazette-combine.js "${datePath}"`, (error, stdout, stderr) => {
-                    if (error) {
-                        safeLog(`Error combining PDFs: ${error.message}`);
-                        resolve({ success: false, error: error.message });
-                        return;
-                    }
-                    if (stderr) {
-                        safeLog(`stderr: ${stderr}`);
-                        resolve({ success: false, error: stderr });
-                        return;
-                    }
-                    safeLog(`stdout: ${stdout}`);
-                    resolve({ success: true });
-                });
-            });
-
-            if (!combineResult.success) {
-                throw new Error(`Error combining PDFs: ${combineResult.error}`);
-            }
-
-            safeLog(`Successfully processed ${month}/${day}/${year}`);
+            })(), 3 * 60 * 60 * 1000); // 3 hours timeout
+            
+            safeLog(`Successfully processed ${formatDate(d).month}/${formatDate(d).day}/${formatDate(d).year}`);
 
         } catch (error) {
             const errorMsg = `Error processing ${d.toISOString().split('T')[0]}: ${error.message}`;
             safeLog(errorMsg);
             processingErrors.push(errorMsg);
-        } finally {
-            // Ensure browser is closed even if there was an error
-            if (browser) {
-                try {
-                    await browser.close();
-                } catch (err) {
-                    safeLog(`Error closing browser: ${err.message}`);
-                }
-            }
         }
     }
 
