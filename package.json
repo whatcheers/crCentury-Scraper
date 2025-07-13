@@ -1,9 +1,10 @@
 {
   "name": "crcenturyscraper",
   "version": "1.0.0",
-  "main": "src/gazette-viewer.js",
+  "main": "gazette-viewer.js",
   "scripts": {
-    "start": "node src/gazette-viewer.js",
+    "start": "node gazette-viewer.js",
+    "dev": "node gazette-viewer.js",
     "prod": "pm2 start ecosystem.config.js --env production",
     "stop": "pm2 stop gazette-viewer",
     "restart": "pm2 restart gazette-viewer",

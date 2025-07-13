@@ -7,23 +7,25 @@ const { fromPath } = require('pdf2pic');
 /**
  * Format date for filename and URL
  * @param {Date} date - The date to format
+ * @param {number} targetYear - Optional target year to use instead of 100 years ago
  */
-function formatDate(date) {
+function formatDate(date, targetYear = null) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear() - 100; // 100 years ago
+    const year = targetYear || (date.getFullYear() - 100); // Use targetYear if provided, otherwise 100 years ago
     return { month, day, year };
 }
 
 /**
  * Format date range for URL
  * @param {Date} date - The date to format
+ * @param {number} targetYear - Optional target year to use instead of 100 years ago
  * @returns {string} - Formatted date range (e.g., "11091924-11111924")
  */
-function formatDateRange(date) {
+function formatDateRange(date, targetYear = null) {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
-    const year = date.getFullYear() - 100;
+    const year = targetYear || (date.getFullYear() - 100);
     
     // Create a range that includes the day before and after
     const prevDay = String(date.getDate() - 1).padStart(2, '0');
@@ -391,13 +393,30 @@ async function randomDelay(min = 1000, max = 3000) {
     const args = process.argv.slice(2);
     let weekArg = args.findIndex(arg => arg.startsWith('--week'));
     let dayArg = args.findIndex(arg => arg.startsWith('--day'));
+    let yearArg = args.findIndex(arg => arg.startsWith('--year'));
     let weekNum = null;
     let specificDay = null;
+    let targetYear = null;
 
     // Check for mutually exclusive arguments
     if (weekArg !== -1 && dayArg !== -1) {
         console.error('Cannot use both --week and --day arguments together');
         process.exit(1);
+    }
+
+    // Parse year argument
+    if (yearArg !== -1) {
+        const yearValue = args[yearArg].split('=')[1] || args[yearArg + 1];
+        if (yearValue && !isNaN(yearValue)) {
+            targetYear = parseInt(yearValue);
+            if (targetYear < 1800 || targetYear > 2000) {
+                console.error('Year must be between 1800 and 2000');
+                process.exit(1);
+            }
+        } else {
+            console.error('Please provide a valid year with --year argument');
+            process.exit(1);
+        }
     }
     
     if (weekArg !== -1) {
@@ -469,8 +488,8 @@ async function randomDelay(min = 1000, max = 3000) {
                         safeLog('Internet connection is now available. Proceeding...');
                     }
 
-                    const { month, day, year } = formatDate(d);
-                    const dateRange = formatDateRange(d);
+                    const { month, day, year } = formatDate(d, targetYear);
+                    const dateRange = formatDateRange(d, targetYear);
                     const datePath = await createDatedFolders(year, month, day);
 
                     safeLog(`Scraping Cedar Rapids Evening Gazette for ${month}/${day}/${year}`);
@@ -628,7 +647,7 @@ async function randomDelay(min = 1000, max = 3000) {
                 }
             })(), 3 * 60 * 60 * 1000); // 3 hours timeout
             
-            safeLog(`Successfully processed ${formatDate(d).month}/${formatDate(d).day}/${formatDate(d).year}`);
+            safeLog(`Successfully processed ${formatDate(d, targetYear).month}/${formatDate(d, targetYear).day}/${formatDate(d, targetYear).year}`);
 
         } catch (error) {
             const errorMsg = `Error processing ${d.toISOString().split('T')[0]}: ${error.message}`;

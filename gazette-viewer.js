@@ -6,7 +6,7 @@ const serveStatic = require('serve-static');
 const galleryRouter = require('./src/routes/gallery');
 
 const app = express();
-const port = process.env.PORT || 3200;
+const port = process.env.PORT || 3201;
 const BASE_PATH = process.env.BASE_PATH || path.resolve('.');
 
 // Rate limiting middleware
@@ -116,6 +116,7 @@ app.get('/', async (req, res) => {
                             <p>The Evening Gazette was a prominent daily newspaper based in Cedar Rapids, Iowa, first published on January 10, 1883. Initially known by this title, the paper later underwent name changes, including Cedar Rapids Evening Gazette and Evening Gazette and Republican, before becoming The Gazette.</p>
                             <p>It served the northeastern and east-central Iowa regions, including the Cedar Rapids and Iowa City metropolitan areas, as a significant source of local news and information. </p>
                             <p>Historical editions of the Evening Gazette are preserved in various archives, including the Cedar Rapids Public Library, <a href="https://www.advantagearchives.com/" target="_blank" rel="noopener noreferrer">Advantage Archives</a>, and various other sources. These resources provide valuable access to its historical content, making it a vital resource for researchers, genealogists, and history enthusiasts interested in Cedar Rapids' regional history.</p>
+                        </section>
 
                         <section aria-labelledby="archives-heading">
                             <h2 id="archives-heading">Available Archives</h2>
@@ -182,6 +183,7 @@ app.get('/', async (req, res) => {
         res.status(500).send('Error loading archive: ' + err.message);
     }
 });
+
 
 // Helper function to generate BookReader HTML
 function generateViewerHtml(title, description, files, date) {

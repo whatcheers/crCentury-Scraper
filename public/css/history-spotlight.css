@@ -1,0 +1,328 @@
+/* History Spotlight Page Styles */
+
+/* Reading progress bar */
+.reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, #4A90E2, #357ABD);
+    z-index: 1000;
+    transition: width 0.3s ease;
+}
+
+/* Breadcrumb navigation */
+.breadcrumb {
+    padding: 1rem 0;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 2rem;
+}
+
+.breadcrumb a {
+    color: #4A90E2;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb a:hover {
+    color: #357ABD;
+}
+
+/* Article content */
+.article-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    line-height: 1.8;
+    font-size: 1.1rem;
+    color: #333;
+}
+
+.article-content h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    color: #2c3e50;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    border-bottom: 3px solid #4A90E2;
+    padding-bottom: 1rem;
+}
+
+.article-content h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    color: #34495e;
+    margin-top: 2.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.article-content h2::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 80%;
+    background: #4A90E2;
+}
+
+.article-content h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.article-content p {
+    margin-bottom: 1.5rem;
+    text-align: justify;
+}
+
+.article-content strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.article-content em {
+    color: #555;
+    font-style: italic;
+}
+
+/* Citations and references */
+.citation {
+    color: #4A90E2;
+    font-weight: 500;
+    cursor: help;
+    position: relative;
+    text-decoration: none;
+}
+
+.citation:hover {
+    color: #357ABD;
+}
+
+.citation-tooltip {
+    position: absolute;
+    background: #333;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.citation:hover .citation-tooltip {
+    opacity: 1;
+}
+
+/* Sources section */
+.article-content h3:last-of-type {
+    border-top: 2px solid #e0e0e0;
+    padding-top: 1.5rem;
+    margin-top: 3rem;
+}
+
+/* Links */
+.article-content a {
+    color: #4A90E2;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-bottom-color 0.3s ease;
+}
+
+.article-content a:hover {
+    border-bottom-color: #4A90E2;
+}
+
+/* Image styling */
+.hero-image {
+    text-align: center;
+    margin: 2rem 0 3rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.hero-image img {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.content-image {
+    margin: 2rem 0;
+    text-align: center;
+}
+
+.content-image img {
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.image-caption {
+    font-style: italic;
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+[data-theme="dark"] .image-caption {
+    color: #aaa;
+}
+
+/* Reading time indicator */
+.reading-time {
+    position: fixed;
+    top: 4rem;
+    right: 2rem;
+    background: rgba(74, 144, 226, 0.9);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.reading-time.visible {
+    opacity: 1;
+}
+
+/* Dark mode overrides */
+[data-theme="dark"] .article-content {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .article-content h1,
+[data-theme="dark"] .article-content h2,
+[data-theme="dark"] .article-content h3 {
+    color: #f0f0f0;
+}
+
+[data-theme="dark"] .article-content strong {
+    color: #f0f0f0;
+}
+
+[data-theme="dark"] .breadcrumb {
+    border-bottom-color: #333;
+}
+
+[data-theme="dark"] .breadcrumb a {
+    color: #6BB6FF;
+}
+
+[data-theme="dark"] .breadcrumb a:hover {
+    color: #4A90E2;
+}
+
+[data-theme="dark"] .article-content a {
+    color: #6BB6FF;
+}
+
+[data-theme="dark"] .article-content a:hover {
+    border-bottom-color: #6BB6FF;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .article-content {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    
+    .article-content h1 {
+        font-size: 2rem;
+    }
+    
+    .article-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .article-content h2::before {
+        display: none;
+    }
+    
+    .reading-time {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin-bottom: 1rem;
+        display: inline-block;
+    }
+}
+
+/* Print styles */
+@media print {
+    .reading-progress,
+    .reading-time,
+    .breadcrumb,
+    .theme-toggle {
+        display: none;
+    }
+    
+    .article-content {
+        max-width: none;
+        padding: 0;
+        font-size: 12pt;
+        line-height: 1.5;
+    }
+    
+    .article-content h1 {
+        font-size: 18pt;
+        page-break-after: avoid;
+    }
+    
+    .article-content h2 {
+        font-size: 14pt;
+        page-break-after: avoid;
+    }
+    
+    .article-content h3 {
+        font-size: 12pt;
+        page-break-after: avoid;
+    }
+}
+
+/* Smooth scrolling for the entire page */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus states for accessibility */
+.citation:focus {
+    outline: 2px solid #4A90E2;
+    outline-offset: 2px;
+}
+
+.breadcrumb a:focus {
+    outline: 2px solid #4A90E2;
+    outline-offset: 2px;
+}
+
+/* Selection styling */
+::selection {
+    background: rgba(74, 144, 226, 0.3);
+    color: #333;
+}
+
+[data-theme="dark"] ::selection {
+    background: rgba(107, 182, 255, 0.3);
+    color: #f0f0f0;
+} 
