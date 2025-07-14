@@ -13,7 +13,14 @@ jest.mock('pdf2pic', () => ({
 }));
 
 describe('PDF Converter', () => {
+    let consoleSpy;
+    let consoleLogSpy;
+
     beforeEach(() => {
+        // Mock console methods to avoid Jest console issues
+        consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+        
         // Setup mock filesystem
         mockFs({
             'test.pdf': Buffer.from([]),
@@ -23,6 +30,8 @@ describe('PDF Converter', () => {
 
     afterEach(() => {
         mockFs.restore();
+        consoleSpy.mockRestore();
+        consoleLogSpy.mockRestore();
     });
 
     test('converts PDF to images successfully', async () => {
@@ -39,6 +48,9 @@ describe('PDF Converter', () => {
             height: 1800,
             uri: '/cache/test-page-2.jpg'
         });
+        
+        // Verify console.log was called with success message
+        expect(consoleLogSpy).toHaveBeenCalledWith('Converted 2 pages from test.pdf');
     });
 
     test('creates cache directory if it does not exist', async () => {
@@ -59,5 +71,8 @@ describe('PDF Converter', () => {
         await expect(convertPDFToImages('test.pdf'))
             .rejects
             .toThrow('Conversion failed');
+            
+        // Verify console.error was called
+        expect(consoleSpy).toHaveBeenCalledWith('Error converting PDF:', expect.any(Error));
     });
 }); 

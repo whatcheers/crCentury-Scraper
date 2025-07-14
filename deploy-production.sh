@@ -50,8 +50,8 @@ done
 
 # Set up BookReader assets (if package exists)
 if [ -d "$SOURCE_DIR/node_modules/bookreader" ]; then
-    echo "Setting up BookReader..."
-    sudo mkdir -p $DEPLOY_DIR/public/bookreader/images
+echo "Setting up BookReader..."
+sudo mkdir -p $DEPLOY_DIR/public/bookreader/images
     sudo cp $SOURCE_DIR/node_modules/bookreader/BookReader/BookReader.css $DEPLOY_DIR/public/bookreader/ || true
     sudo cp $SOURCE_DIR/node_modules/bookreader/BookReader/BookReader.js $DEPLOY_DIR/public/bookreader/ || true
     sudo cp $SOURCE_DIR/node_modules/bookreader/BookReader/jquery-3.js $DEPLOY_DIR/public/bookreader/ || true

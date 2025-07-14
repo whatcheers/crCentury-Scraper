@@ -10,7 +10,7 @@ describe('Mobile and Accessibility Tests', () => {
     let browser;
     let page;
     let server;
-    const PORT = 3200;
+    const PORT = 3201;
     const BASE_URL = `http://localhost:${PORT}`;
 
     beforeAll(async () => {

@@ -187,3 +187,105 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize reading progress
     updateReadingProgress();
 }); 
+
+// Audio Player Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const audioToggle = document.getElementById('audio-toggle');
+    const storyAudio = document.getElementById('story-audio');
+    const audioProgress = document.getElementById('audio-progress');
+    const progressFill = document.getElementById('progress-fill');
+    const timeDisplay = document.getElementById('time-display');
+    const progressBar = document.querySelector('.progress-bar');
+    const speedSelect = document.getElementById('speed-select');
+    
+    if (!audioToggle || !storyAudio) return;
+    
+    let isPlaying = false;
+    let duration = 0;
+    
+    // Format time in MM:SS format
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Update progress bar and time display
+    function updateProgress() {
+        if (duration > 0) {
+            const progress = (storyAudio.currentTime / duration) * 100;
+            progressFill.style.width = progress + '%';
+            timeDisplay.textContent = `${formatTime(storyAudio.currentTime)} / ${formatTime(duration)}`;
+        }
+    }
+    
+    // Toggle play/pause
+    audioToggle.addEventListener('click', function() {
+        if (isPlaying) {
+            storyAudio.pause();
+        } else {
+            storyAudio.play();
+        }
+    });
+    
+    // Audio event listeners
+    storyAudio.addEventListener('loadedmetadata', function() {
+        duration = storyAudio.duration;
+        timeDisplay.textContent = `0:00 / ${formatTime(duration)}`;
+    });
+    
+    storyAudio.addEventListener('play', function() {
+        isPlaying = true;
+        audioToggle.innerHTML = '<i class="fas fa-pause" aria-hidden="true"></i><span class="button-text">Pause</span>';
+        audioProgress.style.display = 'flex';
+    });
+    
+    storyAudio.addEventListener('pause', function() {
+        isPlaying = false;
+        audioToggle.innerHTML = '<i class="fas fa-play" aria-hidden="true"></i><span class="button-text">Listen to this story</span>';
+    });
+    
+    storyAudio.addEventListener('ended', function() {
+        isPlaying = false;
+        audioToggle.innerHTML = '<i class="fas fa-play" aria-hidden="true"></i><span class="button-text">Listen to this story</span>';
+        progressFill.style.width = '0%';
+        timeDisplay.textContent = `0:00 / ${formatTime(duration)}`;
+    });
+    
+    storyAudio.addEventListener('timeupdate', updateProgress);
+    
+    // Click to seek on progress bar
+    progressBar.addEventListener('click', function(e) {
+        if (duration > 0) {
+            const rect = progressBar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const seekTime = (clickX / rect.width) * duration;
+            storyAudio.currentTime = seekTime;
+        }
+    });
+
+    // Speed control functionality
+    if (speedSelect) {
+        speedSelect.addEventListener('change', function() {
+            const speed = parseFloat(this.value);
+            storyAudio.playbackRate = speed;
+        });
+    }
+    
+    // Error handling
+    storyAudio.addEventListener('error', function() {
+        audioToggle.innerHTML = '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i><span class="button-text">Audio unavailable</span>';
+        audioToggle.disabled = true;
+    });
+    
+    // Loading state
+    storyAudio.addEventListener('loadstart', function() {
+        audioToggle.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span class="button-text">Loading...</span>';
+        audioToggle.disabled = true;
+    });
+    
+    storyAudio.addEventListener('canplay', function() {
+        audioToggle.innerHTML = '<i class="fas fa-play" aria-hidden="true"></i><span class="button-text">Listen to this story</span>';
+        audioToggle.disabled = false;
+    });
+}); 

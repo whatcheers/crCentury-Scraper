@@ -27,6 +27,32 @@
         <article class="article-content">
             <h1>Sampson C. Bever: A Cedar Rapids Pioneer and His Contested Legacy</h1>
 
+            <div class="audio-player">
+                <button id="audio-toggle" class="audio-button" aria-label="Play narration">
+                    <i class="fas fa-play" aria-hidden="true"></i>
+                    <span class="button-text">Listen to this story</span>
+                </button>
+                <div class="speed-controls">
+                    <label for="speed-select">Speed:</label>
+                    <select id="speed-select" class="speed-select">
+                        <option value="1">1x</option>
+                        <option value="1.5">1.5x</option>
+                        <option value="1.7">1.7x</option>
+                        <option value="2">2x</option>
+                    </select>
+                </div>
+                <audio id="story-audio" preload="none">
+                    <source src="/audio/bever-story.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                <div class="audio-progress" id="audio-progress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <span class="time-display" id="time-display">0:00 / 0:00</span>
+                </div>
+            </div>
+
             <div class="hero-image">
                 <img src="/photos/bevers/ohsampsonbeverpic_optimized.jpg" alt="Sampson C. Bever portrait" />
                 <p class="image-caption" style="text-align: center;">Sampson Cicero Bever (1808–1892), Cedar Rapids pioneer and banker</p>
@@ -46,7 +72,6 @@
 
             <div class="content-image">
                 <img src="/photos/bevers/27448347_ec06b702-0cfa-4daf-8958-c24bd3ce9f04.jpg" alt="Historical Cedar Rapids courthouse or legal document" />
-                <p class="image-caption">Historical Cedar Rapids legal proceedings and courthouse scenes</p>
             </div>
 
             <p>Sampson Bever's death on August 22, 1892 set the stage for a bitter family dispute over his fortune. He was preceded in death by his wife Mary (who died in 1885) and several of their children (three daughters had died young and a son, Henry, died in 1882). Five adult children survived him: Jane E. Bever Spangler, James L. Bever, George W. Bever, Ellen C. Bever Blake, and John B. Bever. In February 1886 – when he was about 78 years old – Sampson had executed a will (with a later codicil added in July 1891) outlining how his estate should be distributed. This will surprised many, because although Bever had often expressed in life that he wanted all his children to share his property more or less equally, the terms of the will were far from equal. Each of his two daughters was left a valuable home (built for them by their father) and a parcel of bank stock, but little else. By contemporary estimates, Jane and Ellen each stood to inherit around $40,000 worth of assets. The vast remainder of the estate – totaling roughly $650,000 in land, bank shares, railroad stock, and other investments – was to go to the three sons, with James slated to receive about $200,000 and George and John around $175,000 each. Small cash bequests and charitable gifts accounted for only a tiny portion of the will. In short, Sampson C. Bever's will heavily favored his sons' interests, especially those of James (who had been his right-hand man in business for years).</p>
