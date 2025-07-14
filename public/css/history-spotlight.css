@@ -367,38 +367,22 @@ html {
     font-size: 1.1rem;
 }
 
-.speed-controls {
-    margin: 1rem 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-}
-
-.speed-controls label {
-    font-size: 0.9rem;
-    color: var(--text-color);
-    font-weight: 500;
-}
-
+/* Playback speed dropdown */
 .speed-select {
-    padding: 0.25rem 0.5rem;
+    margin-left: 1rem;
+    padding: 0.3rem 0.6rem;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background: var(--card-bg);
     color: var(--text-color);
-    font-size: 0.9rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    font-size: 0.9rem;
 }
 
-.speed-select:hover {
-    border-color: var(--accent-color);
-}
-
-.speed-select:focus {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 2px;
+[data-theme="dark"] .speed-select {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border-color: var(--border-color);
 }
 
 .audio-progress {
@@ -443,14 +427,4 @@ html {
 
 [data-theme="dark"] .audio-button:disabled {
     background: #444;
-}
-
-[data-theme="dark"] .speed-controls label {
-    color: var(--text-color);
-}
-
-[data-theme="dark"] .speed-select {
-    background: var(--card-bg);
-    color: var(--text-color);
-    border-color: var(--border-color);
 } 

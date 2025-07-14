@@ -118,6 +118,16 @@ app.get('/', async (req, res) => {
                             <p>Historical editions of the Evening Gazette are preserved in various archives, including the Cedar Rapids Public Library, <a href="https://www.advantagearchives.com/" target="_blank" rel="noopener noreferrer">Advantage Archives</a>, and various other sources. These resources provide valuable access to its historical content, making it a vital resource for researchers, genealogists, and history enthusiasts interested in Cedar Rapids' regional history.</p>
                         </section>
 
+                        <section aria-labelledby="spotlight-heading">
+                            <h2 id="spotlight-heading">History Spotlight</h2>
+                            <div class="spotlight-content">
+                                <a href="/history/bever-bone-battle.html" class="spotlight-link">
+                                    <i class="fas fa-star" aria-hidden="true"></i>
+                                    The Bever Bone Battle - Cedar Rapids History
+                                </a>
+                            </div>
+                        </section>
+
                         <section aria-labelledby="archives-heading">
                             <h2 id="archives-heading">Available Archives</h2>
                             <ul class="date-list" role="list">

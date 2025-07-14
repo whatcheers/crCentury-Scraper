@@ -59,7 +59,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Reading time estimator
     function estimateReadingTime() {
-        const text = document.querySelector('.story-wrapper').textContent;
+        const textElement = document.querySelector('.article-content');
+        if (!textElement) return 0;
+        const text = textElement.textContent;
         const wordsPerMinute = 200;
         const words = text.trim().split(/\s+/).length;
         const minutes = Math.ceil(words / wordsPerMinute);
@@ -188,17 +190,27 @@ document.addEventListener('DOMContentLoaded', function() {
     updateReadingProgress();
 }); 
 
-// Audio Player Functionality
+// Unified Audio Player
 document.addEventListener('DOMContentLoaded', function() {
-    const audioToggle = document.getElementById('audio-toggle');
-    const storyAudio = document.getElementById('story-audio');
-    const audioProgress = document.getElementById('audio-progress');
+    const audio = document.getElementById('story-audio');
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const progressBar = document.getElementById('progress-bar');
     const progressFill = document.getElementById('progress-fill');
     const timeDisplay = document.getElementById('time-display');
-    const progressBar = document.querySelector('.progress-bar');
-    const speedSelect = document.getElementById('speed-select');
+    const audioStatus = document.querySelector('.audio-status');
+    const speedButtons = document.querySelectorAll('.speed-btn');
     
-    if (!audioToggle || !storyAudio) return;
+    console.log('Audio elements found:', {
+        audio: !!audio,
+        playPauseBtn: !!playPauseBtn,
+        progressBar: !!progressBar,
+        audioStatus: !!audioStatus
+    });
+    
+    if (!audio || !playPauseBtn) {
+        console.error('Required audio elements not found!');
+        return;
+    }
     
     let isPlaying = false;
     let duration = 0;
@@ -213,46 +225,62 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update progress bar and time display
     function updateProgress() {
         if (duration > 0) {
-            const progress = (storyAudio.currentTime / duration) * 100;
+            const progress = (audio.currentTime / duration) * 100;
             progressFill.style.width = progress + '%';
-            timeDisplay.textContent = `${formatTime(storyAudio.currentTime)} / ${formatTime(duration)}`;
+            timeDisplay.textContent = `${formatTime(audio.currentTime)} / ${formatTime(duration)}`;
         }
     }
     
     // Toggle play/pause
-    audioToggle.addEventListener('click', function() {
+    playPauseBtn.addEventListener('click', function() {
+        console.log('Play button clicked! isPlaying:', isPlaying);
         if (isPlaying) {
-            storyAudio.pause();
+            audio.pause();
         } else {
-            storyAudio.play();
+            console.log('Attempting to play audio...');
+            audio.play().then(() => {
+                console.log('Audio started successfully');
+            }).catch(function(error) {
+                console.error('Audio play failed:', error);
+                audioStatus.textContent = 'Playback failed - ' + error.message;
+            });
         }
     });
     
     // Audio event listeners
-    storyAudio.addEventListener('loadedmetadata', function() {
-        duration = storyAudio.duration;
+    audio.addEventListener('loadedmetadata', function() {
+        duration = audio.duration;
+        console.log('Audio duration:', duration);
         timeDisplay.textContent = `0:00 / ${formatTime(duration)}`;
     });
     
-    storyAudio.addEventListener('play', function() {
+    audio.addEventListener('play', function() {
+        console.log('Audio play event fired');
         isPlaying = true;
-        audioToggle.innerHTML = '<i class="fas fa-pause" aria-hidden="true"></i><span class="button-text">Pause</span>';
-        audioProgress.style.display = 'flex';
+        playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        audioStatus.textContent = 'Now playing...';
+        playPauseBtn.setAttribute('aria-label', 'Pause audio');
     });
     
-    storyAudio.addEventListener('pause', function() {
+    audio.addEventListener('pause', function() {
+        console.log('Audio pause event fired');
         isPlaying = false;
-        audioToggle.innerHTML = '<i class="fas fa-play" aria-hidden="true"></i><span class="button-text">Listen to this story</span>';
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        audioStatus.textContent = 'Listen to this story';
+        playPauseBtn.setAttribute('aria-label', 'Play audio');
     });
     
-    storyAudio.addEventListener('ended', function() {
+    audio.addEventListener('ended', function() {
+        console.log('Audio ended event fired');
         isPlaying = false;
-        audioToggle.innerHTML = '<i class="fas fa-play" aria-hidden="true"></i><span class="button-text">Listen to this story</span>';
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        audioStatus.textContent = 'Listen to this story';
         progressFill.style.width = '0%';
         timeDisplay.textContent = `0:00 / ${formatTime(duration)}`;
+        playPauseBtn.setAttribute('aria-label', 'Play audio');
     });
     
-    storyAudio.addEventListener('timeupdate', updateProgress);
+    audio.addEventListener('timeupdate', updateProgress);
     
     // Click to seek on progress bar
     progressBar.addEventListener('click', function(e) {
@@ -260,32 +288,52 @@ document.addEventListener('DOMContentLoaded', function() {
             const rect = progressBar.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
             const seekTime = (clickX / rect.width) * duration;
-            storyAudio.currentTime = seekTime;
+            audio.currentTime = seekTime;
         }
     });
-
-    // Speed control functionality
-    if (speedSelect) {
-        speedSelect.addEventListener('change', function() {
-            const speed = parseFloat(this.value);
-            storyAudio.playbackRate = speed;
-        });
-    }
     
     // Error handling
-    storyAudio.addEventListener('error', function() {
-        audioToggle.innerHTML = '<i class="fas fa-exclamation-triangle" aria-hidden="true"></i><span class="button-text">Audio unavailable</span>';
-        audioToggle.disabled = true;
+    audio.addEventListener('error', function(e) {
+        console.error('Audio error:', e, audio.error);
+        playPauseBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+        audioStatus.textContent = 'Audio unavailable';
+        playPauseBtn.disabled = true;
     });
     
     // Loading state
-    storyAudio.addEventListener('loadstart', function() {
-        audioToggle.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span class="button-text">Loading...</span>';
-        audioToggle.disabled = true;
+    audio.addEventListener('loadstart', function() {
+        console.log('Audio loading started');
+        playPauseBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        audioStatus.textContent = 'Loading...';
     });
     
-    storyAudio.addEventListener('canplay', function() {
-        audioToggle.innerHTML = '<i class="fas fa-play" aria-hidden="true"></i><span class="button-text">Listen to this story</span>';
-        audioToggle.disabled = false;
+    audio.addEventListener('canplay', function() {
+        console.log('Audio can play');
+        playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        audioStatus.textContent = 'Listen to this story';
+        playPauseBtn.disabled = false;
     });
+    
+    // Speed controls
+    const savedSpeed = localStorage.getItem('audioSpeed') || '1';
+    audio.playbackRate = parseFloat(savedSpeed);
+    
+    // Update active speed button
+    speedButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.speed === savedSpeed);
+        
+        btn.addEventListener('click', function() {
+            const speed = parseFloat(this.dataset.speed);
+            audio.playbackRate = speed;
+            
+            // Update active button
+            speedButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Save preference
+            localStorage.setItem('audioSpeed', speed.toString());
+        });
+    });
+    
+    console.log('Audio player initialized successfully');
 }); 
